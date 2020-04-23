@@ -16,7 +16,7 @@ Moonbox establishes a complete user architecture and introduces the concept of O
 Taking Apache Spark as calculation engine, Moonbox supports hybrid calculation across multiple data sources, such as MySQL, Oracle, Hive, Kudu, HDFS, MongoDB, etc., and it also supports custom extension for more data sources.
 
 * Unified SQL Supported  
-Spark SQL is the standard query language of Moonbox. With Spark SQL, specific DDL and DCL are expanded, including creating, deleting and authorizing users, access authorization for data table and data column, mount/umount of physical data source/table, creating or deleting logical database/timing task and udf/udaf, etc..
+Spark SQL is the standard query language of Moonbox. With Spark SQL, specific DDL and DCL are expanded, including creating, deleting and authorizing users, access authorization for data table and data column, mount/umount of physical data source/table, creating or deleting logical database/time-scheduling event and udf/udaf, etc..
 
 * Optimization Strategy Supported  
 Moonbox supports hybrid calculation based on Apache Spark, and Spark SQL supports multiple data sources. However, Spark SQL fails to utilize the calculation feature of data sources while pulling data, only focusing on the pushdown of project and filter (operators). 
@@ -29,8 +29,8 @@ Moonbox defines DCL to implement column permission control. System Administrator
 * Diversified UDF/UDAF  
 Moonbox supports creating UDF/UDAF not only with JAR files, but also with Source Code, including Java and Scala, making the development and verification of UDF more convenient.
 
-* Timing Task Supported  
-Moonbox provides timing task function. User defines timing task with DDL, defines scheduling strategy with crontab expression, and embeds quartz in the backend for task timing scheduling.    
+* Time-Scheduling Event Supported  
+Moonbox provides time-scheduling event function. User defines time-scheduling event with DDL, defines scheduling strategy with crontab expression, and embeds quartz in the backend for time-scheduling event.    
 
 # Latest Release
 Please download the latest [RELEASE](https://github.com/edp963/moonbox/releases/tag/0.3.0-beta)

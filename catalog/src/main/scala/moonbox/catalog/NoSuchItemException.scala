@@ -32,6 +32,9 @@ class NoSuchProcedureException(proc: String)
 class NoSuchTimedEventException(event: String)
 	extends Exception(s"Scheduler '$event' not found")
 
+class NoSuchQueryException(query: String)
+	extends Exception(s"Query '$query' not found")
+
 class NoSuchTableException(db: String, table: String)
 	extends Exception(s"Table or view '$table' not found in database '$db'")
 
@@ -52,20 +55,20 @@ class NoSuchViewException(db: String, view: String)
 class NoSuchUserException(user: String)
 	extends Exception(s"User '$user' not found")
 
-class NoSuchGroupException(group: String)
-	extends Exception(s"Group '$group' not found")
-
-class NoSuchUserGroupRelException(group: String)
-	extends Exception(s"User Group Relationship '$group' not found")
-
 class NoSuchUserTableRelException(user: String, table: String, column: String)
 	extends Exception(s"Relationship of User '$user' and Column '$column' in Table '$table' not found")
 
 class NoSuchOrganizationException(org: String)
 	extends Exception(s"Organization '$org' not found")
 
-class NoUserInGroupException(group: String)
-	extends Exception(s"No user in group '$group'")
-
 class NoSuchAvailableTableException(table: String, user: String)
 	extends Exception(s"No table '$table' available for user '$user'")
+
+class NoSuchApplicationException(app: String)
+	extends Exception(s"Application '$app' not found")
+
+class NoSuchClusterException(cluster: String)
+		extends Exception(s"Cluster '$cluster' not found")
+
+class NoSuchGroupException(group: String)
+	extends Exception(s"Group '$group' not found")

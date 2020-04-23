@@ -37,6 +37,7 @@ object MoonboxRest {
 	private var language: String = "mql"
 	private var database: Option[String] = _
 	private var path: String = _
+	private var ql: String = null
 	private var server: String = _
 	private var name: Option[String] = None
 	private val config = new scala.collection.mutable.HashMap[String, String]
@@ -81,8 +82,14 @@ object MoonboxRest {
 
 		val parameter = jsonObject.toString
 		val response = HttpClient.doPost(url, parameter, Charsets.UTF_8.name())
-		val jobId = new JSONObject(response).getString("jobId")
-		println(s"batch job submitted as $jobId, parameters is $parameter")
+		var jobId: String = null
+		try {
+			jobId = new JSONObject(response).getString("jobId")
+			println(s"batch job submitted as $jobId, parameters is $parameter")
+		} catch {
+			case e: Exception =>
+				println(s"batch job submit failed, error message is ${e.getMessage}")
+		}
 		jobId
 	}
 
@@ -126,14 +133,18 @@ object MoonboxRest {
 	}
 
 	private def readSqls(): Seq[String] = {
-		val source = Source.fromFile(path)
-		val sqls = source.mkString.split(";").filterNot(s => s == "" || s == null)
-		source.close()
-		sqls
+		if (path == null) {
+			ql.split(";")
+		} else {
+			val source = Source.fromFile(path)
+			val sqls = source.mkString.split(";").filterNot(s => s == "" || s == null)
+			source.close()
+			sqls
+		}
 	}
 
 	private def checkArgs(): Boolean = {
-		if (user == null || password == null || server == null || path == null) {
+		if (user == null || password == null || server == null || (path == null && ql == null)) {
 			false
 		} else {
 			true
@@ -160,14 +171,17 @@ object MoonboxRest {
 		case f :: tail if f.startsWith("-f") =>
 			path = f.stripPrefix("-f")
 			parse(tail)
+		case e :: tail if e.startsWith("-e") =>
+			ql = e.stripPrefix("-e")
+			parse(tail)
 		case n :: tail if n.startsWith("-n") =>
 			name = Some(n.stripPrefix("-n"))
 			parse(tail)
 		case c :: tail if c.startsWith("-C") =>
 			c.stripPrefix("-C").split(",").foreach { keyvalues =>
 				val kv = keyvalues.trim.split("=")
-				assert(kv.length == 2, "please check config format.")
-				config.put(kv(0).trim, kv(1).trim)
+				assert(kv.length >= 2, "please check config format.")
+				config.put(kv(0).trim, keyvalues.substring(kv(0).length + 1).trim)
 			}
 		case Nil =>
 		case _ =>
@@ -177,14 +191,15 @@ object MoonboxRest {
 	private def printUsageAndExit(exitCode: Int): Unit = {
 		// scalastyle: off println
 		System.err.println(
-			"Usage: moonbox [options]\n" +
+			"Usage: moonbox-submit [options]\n" +
 				"options:\n" +
 				"   -s            Connect to host:port.\n" +
 				"   -u            User for login.\n" +
 				"   -p            Password to use when connecting to server.\n" +
-				"   -l            Mql or hql to execute.\n" +
+				"   -l            Language to execute: MQL (\"mql\") or HQL (\"hql\").\n" +
 				"   -d            Current database, optional.\n" +
-				"   -f            Mql or hql script file path.\n"
+				"   -f            MQL or HQL script file path.\n" +
+				"   -e            MQL with double quotes."
 		)
 		System.exit(exitCode)
 	}

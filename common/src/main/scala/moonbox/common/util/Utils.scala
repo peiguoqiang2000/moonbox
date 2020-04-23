@@ -29,11 +29,8 @@ import java.util.{Collections, Date, Properties, Map => JMap}
 
 import com.typesafe.config.{Config, ConfigFactory}
 import moonbox.common.MbLogging
-import org.apache.commons.io.FileUtils
 
 import scala.collection.JavaConverters._
-import scala.collection.mutable.ArrayBuffer
-import scala.io.Source
 
 object Utils extends MbLogging {
 
@@ -101,6 +98,15 @@ object Utils extends MbLogging {
 	def getSystemProperties: Map[String, String] = {
 		System.getProperties.stringPropertyNames().asScala
 			.map(key => (key, System.getProperty(key))).toMap
+	}
+
+	def getMoonboxHome: String = {
+		sys.env.getOrElse[String]("MOONBOX_HOME",
+			throw new Exception("MOONBOX_HOME does not config."))
+	}
+
+	def getMoonboxHomeOption: Option[String] = {
+		sys.env.get("MOONBOX_HOME")
 	}
 
 	def getDefaultLogConfig(env: Map[String, String] = sys.env): Option[String] = {
@@ -250,16 +256,25 @@ object Utils extends MbLogging {
 	}
 
 	def formatDate(time: Long): String =  {
-		val simpleFormat = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+		val simpleFormat = new java.text.SimpleDateFormat("yyyy-MM-dd")
 		simpleFormat.format(new Date(time))
 	}
 
 	def formatDate(date: Date): String =  {
+		val simpleFormat = new java.text.SimpleDateFormat("yyyy-MM-dd")
+		simpleFormat.format(date)
+	}
+
+	def formatTimestamp(time: Long): String =  {
+		val simpleFormat = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+		simpleFormat.format(new Date(time))
+	}
+
+	def formatTimestamp(date: Date): String =  {
 		val simpleFormat = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
 		simpleFormat.format(date)
 	}
 
-	// copy from spark
 	def escapeLikeRegex(pattern: String): String = {
 		val in = pattern.toIterator
 		val out = new StringBuilder()

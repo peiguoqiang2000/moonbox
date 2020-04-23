@@ -33,7 +33,9 @@ Taking all aspects into consideration, data virtualization and compution serviti
 
 ## Architecture
 
-![Image text](https://github.com/edp963/moonbox/blob/master/docs/img/overview%E5%9B%BE.png)
+<p style="text-align: center;">
+  <img src="img/overview图.png" style="width:80%;" title="Moonbox Architecture" alt="Architecture" />
+</p>
 
 Generally speaking, Moonbox consists of four parts, namely Client, Access Layer, Grid and Storage/Computation Layer.
 
@@ -72,7 +74,7 @@ Generally speaking, Moonbox consists of four parts, namely Client, Access Layer,
   Taking Apache Spark as calculation engine, Moonbox supports hybrid calculation across multiple data sources, such as MySQL, Oracle, Hive, Kudu, HDFS, MongoDB, etc., and it also supports custom extension for more data sources.
 
 - Unified SQL Supported  
-  Spark SQL is the standard query language of Moonbox. With Spark SQL, specific DDL and DCL are expanded, including creating, deleting and authorizing users, access authorization for data table and data column, mount/unmount of physical data source/table, creating or deleting logical database/timing task and udf/udaf, etc..
+  Spark SQL is the standard query language of Moonbox. With Spark SQL, specific DDL and DCL are expanded, including creating, deleting and authorizing users, access authorization for data table and data column, mount/unmount of physical data source/table, creating or deleting logical database/time-scheduling event and udf/udaf, etc..
  
 - Optimization Strategy Supported  
   Moonbox supports hybrid calculation based on Apache Spark, and Spark SQL supports multiple data sources. However, Spark SQL fails to utilize the calculation feature of data sources while pulling data, only focusing on the pushdown of project and filter (operators). Moonbox optimizes LogicalPlan that has been optimized by Spark Optimizer, splits subtree which can be pushed to data source, figures out the Data Source Query Language as the mapping of the subtree, and pulls the results back to Spark for further calculation. If the whole LogicalPlan can be pushed to data source, Moonbox will directly run the query statement (mapping of LogicalPlan) with data source, so as to reduce the cost of distributed obligation and save computing resource.
@@ -84,6 +86,6 @@ Generally speaking, Moonbox consists of four parts, namely Client, Access Layer,
   Moonbox supports creating UDF/UDAF not only with JAR files, but also with Source Code, including Java and Scala, making the development and verification of UDF more convenient.
 
 - Timing Task Supported  
-  Moonbox provides timing task function. User defines timing task with DDL, defines scheduling strategy with crontab expression, and embeds quartz in the backend for task timing scheduling.   
+  Moonbox provides time-scheduling event function. User defines time-scheduling event with DDL, defines scheduling strategy with crontab expression, and embeds quartz in the backend for time-scheduling event.  
 
 

@@ -23,322 +23,409 @@ package moonbox.catalog
 import moonbox.common.util.ListenerEvent
 
 trait CatalogEventListener {
-	def onEvent(event: CatalogEvent): Unit
+  def onEvent(event: CatalogEvent): Unit
 }
 
-trait CatalogEvent extends ListenerEvent {
-	val organization: String
-}
+trait CatalogEvent extends ListenerEvent
 
-trait DatasourceEvent extends CatalogEvent {
-	val datasource: String
-}
-case class CreateDatasourcePreEvent(organization: String, datasource: String) extends DatasourceEvent
-case class CreateDatasourceEvent(organization: String, datasource: String) extends DatasourceEvent
-case class DropDatasourcePreEvent(organization: String, datasource: String) extends DatasourceEvent
-case class DropDatasourceEvent(organization: String, datasource: String) extends DatasourceEvent
-case class RenameDatasourcePreEvent(
-	organization: String,
-	datasource: String,
-	newDatasource: String) extends DatasourceEvent
-case class RenameDatasourceEvent(
-	organization: String,
-	datasource: String,
-	newDatasource: String) extends DatasourceEvent
+trait DatabaseEvent extends CatalogEvent
 
-trait DatabaseEvent extends CatalogEvent {
-	val database: String
-}
-case class CreateDatabasePreEvent(organization: String, database: String) extends DatabaseEvent
-case class CreateDatabaseEvent(organization: String, database: String) extends DatabaseEvent
-case class DropDatabasePreEvent(organization: String, database: String) extends DatabaseEvent
-case class DropDatabaseEvent(organization: String, database: String) extends DatabaseEvent
+case class CreateDatabasePreEvent(
+                                   organization: String,
+                                   database: String) extends DatabaseEvent
+
+case class CreateDatabaseEvent(
+                                organization: String,
+                                database: String) extends DatabaseEvent
+
+case class DropDatabasePreEvent(
+                                 organization: String,
+                                 database: String) extends DatabaseEvent
+
+case class DropDatabaseEvent(
+                              organization: String,
+                              database: String) extends DatabaseEvent
+
 case class RenameDatabasePreEvent(
-	organization: String,
-	database: String,
-	newDatabase: String) extends DatabaseEvent
+                                   organization: String,
+                                   database: String,
+                                   newDatabase: String) extends DatabaseEvent
+
 case class RenameDatabaseEvent(
-	organization: String,
-	database: String,
-	newDatabase: String) extends DatabaseEvent
+                                organization: String,
+                                database: String,
+                                newDatabase: String) extends DatabaseEvent
 
 
-trait TableEvent extends DatabaseEvent {
-	val table: String
-}
-case class CreateTablePreEvent(organization: String, database: String, table: String) extends TableEvent
-case class CreateTableEvent(organization: String, database: String, table: String) extends TableEvent
-case class DropTablePreEvent(organization: String, database: String, table: String) extends TableEvent
-case class DropTableEvent(organization: String, database: String, table: String) extends TableEvent
+trait TableEvent extends DatabaseEvent
+
+case class CreateTablePreEvent(
+                                organization: String,
+                                database: String,
+                                table: String) extends TableEvent
+
+case class CreateTableEvent(
+                             organization: String,
+                             database: String,
+                             table: String) extends TableEvent
+
+case class DropTablePreEvent(
+                              organization: String,
+                              database: String,
+                              table: String) extends TableEvent
+
+case class DropTableEvent(
+                           organization: String,
+                           database: String,
+                           table: String) extends TableEvent
+
 case class RenameTablePreEvent(
-	organization: String,
-	database: String,
-	table: String,
-	newTable: String) extends TableEvent
+                                organization: String,
+                                database: String,
+                                table: String,
+                                newTable: String) extends TableEvent
+
 case class RenameTableEvent(
-	organization: String,
-	database: String,
-	table: String,
-	newTable: String) extends TableEvent
+                             organization: String,
+                             database: String,
+                             table: String,
+                             newTable: String) extends TableEvent
 
 
-trait FunctionEvent extends DatabaseEvent {
-	val function: String
-}
-case class CreateFunctionPreEvent(organization: String, database: String, function: String) extends FunctionEvent
-case class CreateFunctionEvent(organization: String, database: String, function: String) extends FunctionEvent
-case class DropFunctionPreEvent(organization: String, database: String, function: String) extends FunctionEvent
-case class DropFunctionEvent(organization: String, database: String, function: String) extends FunctionEvent
+trait FunctionEvent extends DatabaseEvent
+
+case class CreateFunctionPreEvent(
+                                   organization: String,
+                                   database: String,
+                                   function: String) extends FunctionEvent
+
+case class CreateFunctionEvent(
+                                organization: String,
+                                database: String,
+                                function: String) extends FunctionEvent
+
+case class DropFunctionPreEvent(
+                                 organization: String,
+                                 database: String,
+                                 function: String) extends FunctionEvent
+
+case class DropFunctionEvent(
+                              organization: String,
+                              database: String,
+                              function: String) extends FunctionEvent
+
 case class RenameFunctionPreEvent(
-	organization: String,
-	database: String,
-	function: String,
-	newFunction: String) extends FunctionEvent
+                                   organization: String,
+                                   database: String,
+                                   function: String,
+                                   newFunction: String) extends FunctionEvent
+
 case class RenameFunctionEvent(
-	organization: String,
-	database: String,
-	function: String,
-	newFunction: String) extends FunctionEvent
+                                organization: String,
+                                database: String,
+                                function: String,
+                                newFunction: String) extends FunctionEvent
+
+trait ApplicationEvent extends CatalogEvent
+
+case class CreateApplicationPreEvent(
+                                      name: String) extends ApplicationEvent
+
+case class CreateApplicationEvent(
+                                   name: String) extends ApplicationEvent
+
+case class DropApplicationPreEvent(
+                                    name: String) extends ApplicationEvent
+
+case class DropApplicationEvent(
+                                 name: String) extends ApplicationEvent
+
+trait ClusterEvent extends CatalogEvent
+
+case class CreateClusterPreEvent(
+                                  name: String) extends ClusterEvent
+
+case class CreateClusterEvent(
+                               name: String) extends ClusterEvent
+
+case class DropClusterPreEvent(
+                                name: String) extends ClusterEvent
+
+case class DropClusterEvent(
+                             name: String) extends ClusterEvent
 
 
-trait ViewEvent extends DatabaseEvent {
-	val view: String
-}
-case class CreateViewPreEvent(organization: String, database: String, view: String) extends ViewEvent
-case class CreateViewEvent(organization: String, database: String, view: String) extends ViewEvent
-case class DropViewPreEvent(organization: String, database: String, view: String) extends ViewEvent
-case class DropViewEvent(organization: String, database: String, view: String) extends ViewEvent
-case class RenameViewPreEvent(organization: String, database: String, view: String, newView: String) extends ViewEvent
-case class RenameViewEvent(organization: String, database: String, view: String, newView: String) extends ViewEvent
+trait OrganizationEvent extends CatalogEvent
+
+case class CreateOrganizationPreEvent(
+                                       organization: String) extends OrganizationEvent
+
+case class CreateOrganizationEvent(
+                                    organization: String) extends OrganizationEvent
+
+case class DropOrganizationPreEvent(
+                                     organization: String) extends OrganizationEvent
+
+case class DropOrganizationEvent(
+                                  organization: String) extends OrganizationEvent
+
+case class RenameOrganizationPreEvent(
+                                       organization: String,
+                                       newOrganization: String) extends OrganizationEvent
+
+case class RenameOrganizationEvent(
+                                    organization: String,
+                                    newOrganization: String) extends OrganizationEvent
 
 
+trait UserEvent extends CatalogEvent
 
-trait OrganizationEvent extends CatalogEvent {
-	val organization: String
-}
-case class CreateOrganizationPreEvent(organization: String) extends OrganizationEvent
-case class CreateOrganizationEvent(organization: String) extends OrganizationEvent
-case class DropOrganizationPreEvent(organization: String)  extends OrganizationEvent
-case class DropOrganizationEvent(organization: String)  extends OrganizationEvent
-case class RenameOrganizationPreEvent(organization: String, newOrganization: String)  extends OrganizationEvent
-case class RenameOrganizationEvent(organization: String, newOrganization: String)  extends OrganizationEvent
+case class CreateUserPreEvent(
+                               organization: String,
+                               user: String) extends UserEvent
 
+case class CreateUserEvent(
+                            organization: String,
+                            user: String) extends UserEvent
 
-trait GroupEvent extends CatalogEvent {
-	val group: String
-}
-case class CreateGroupPreEvent(organization: String, group: String) extends GroupEvent
-case class CreateGroupEvent(organization: String, group: String) extends GroupEvent
-case class DropGroupPreEvent(organization: String, group: String) extends GroupEvent
-case class DropGroupEvent(organization: String, group: String) extends GroupEvent
-case class RenameGroupPreEvent(organization: String, group: String, newGroup: String) extends GroupEvent
-case class RenameGroupEvent(organization: String, group: String, newGroup: String) extends GroupEvent
+case class DropUserPreEvent(
+                             organization: String,
+                             user: String) extends UserEvent
 
+case class DropUserEvent(
+                          organization: String,
+                          user: String) extends UserEvent
 
-trait UserEvent extends CatalogEvent {
-	val user: String
-}
-case class CreateUserPreEvent(organization: String, user: String) extends UserEvent
-case class CreateUserEvent(organization: String, user: String) extends UserEvent
-case class DropUserPreEvent(organization: String, user: String) extends UserEvent
-case class DropUserEvent(organization: String, user: String) extends UserEvent
-case class RenameUserPreEvent(organization: String, user: String, newUser: String) extends UserEvent
-case class RenameUserEvent(organization: String, user: String, newUser: String) extends UserEvent
+case class RenameUserPreEvent(
+                               organization: String,
+                               user: String,
+                               newUser: String) extends UserEvent
+
+case class RenameUserEvent(
+                            organization: String,
+                            user: String,
+                            newUser: String) extends UserEvent
 
 
-trait ProcedureEvent extends CatalogEvent {
-	val procedure: String
-}
-case class CreateProcedurePreEvent(organization: String, procedure: String) extends ProcedureEvent
-case class CreateProcedureEvent(organization: String, procedure: String) extends ProcedureEvent
-case class DropProcedurePreEvent(organization: String, procedure: String) extends ProcedureEvent
-case class DropProcedureEvent(organization: String, procedure: String) extends ProcedureEvent
-case class RenameProcedurePreEvent(organization: String, procedure: String, newProcedure: String) extends ProcedureEvent
-case class RenameProcedureEvent(organization: String, procedure: String, newProcedure: String) extends ProcedureEvent
+trait ProcedureEvent extends CatalogEvent
 
-trait TimedEventEvent extends CatalogEvent {
-	val event: String
-}
+case class CreateProcedurePreEvent(
+                                    organization: String,
+                                    procedure: String) extends ProcedureEvent
 
-case class CreateTimedEventPreEvent(organization: String, event: String) extends TimedEventEvent
-case class CreateTimedEventEvent(organization: String, event: String) extends TimedEventEvent
-case class DropTimedEventPreEvent(organization: String, event: String) extends TimedEventEvent
-case class DropTimedEventEvent(organization: String, event: String) extends TimedEventEvent
-case class RenameTimedEventPreEvent(organization: String, event: String) extends TimedEventEvent
-case class RenameTimedEventEvent(organization: String, event: String) extends TimedEventEvent
+case class CreateProcedureEvent(
+                                 organization: String,
+                                 procedure: String) extends ProcedureEvent
+
+case class DropProcedurePreEvent(
+                                  organization: String,
+                                  procedure: String) extends ProcedureEvent
+
+case class DropProcedureEvent(
+                               organization: String,
+                               procedure: String) extends ProcedureEvent
+
+case class RenameProcedurePreEvent(
+                                    organization: String,
+                                    procedure: String,
+                                    newProcedure: String) extends ProcedureEvent
+
+case class RenameProcedureEvent(
+                                 organization: String,
+                                 procedure: String,
+                                 newProcedure: String) extends ProcedureEvent
+
+trait QueryEvent extends CatalogEvent
+
+case class CreateQueryPreEvent(
+                                organization: String,
+                                query: String) extends QueryEvent
+
+case class CreateQueryEvent(
+                             organization: String,
+                             query: String) extends QueryEvent
+
+case class AlterQueryPreEvent(
+                               organization: String,
+                               query: String) extends QueryEvent
+
+case class AlterQueryEvent(
+                            organization: String,
+                            query: String) extends QueryEvent
+
+case class DropQueryPreEvent(
+                              organization: String,
+                              query: String) extends QueryEvent
+
+case class DropQueryEvent(
+                           organization: String,
+                           query: String) extends QueryEvent
+
+trait TimedEventEvent extends CatalogEvent
+
+case class CreateTimedEventPreEvent(
+                                     organization: String,
+                                     event: String) extends TimedEventEvent
+
+case class CreateTimedEventEvent(
+                                  organization: String,
+                                  event: String) extends TimedEventEvent
+
+case class DropTimedEventPreEvent(
+                                   organization: String,
+                                   event: String) extends TimedEventEvent
+
+case class DropTimedEventEvent(
+                                organization: String,
+                                event: String) extends TimedEventEvent
+
+case class RenameTimedEventPreEvent(
+                                     organization: String,
+                                     event: String) extends TimedEventEvent
+
+case class RenameTimedEventEvent(
+                                  organization: String,
+                                  event: String) extends TimedEventEvent
+
 
 trait DatabasePrivilegeEvent extends CatalogEvent
 
 case class CreateDatabasePrivilegePreEvent(
-	organization: String,
-	user: String,
-	database: String,
-	privileges: Seq[String]) extends DatabasePrivilegeEvent
+                                            organization: String,
+                                            user: String,
+                                            database: String,
+                                            privileges: Seq[String]) extends DatabasePrivilegeEvent
 
 case class CreateDatabasePrivilegeEvent(
-	organization: String,
-	user: String,
-	database: String,
-	privileges: Seq[String]) extends DatabasePrivilegeEvent
+                                         organization: String,
+                                         user: String,
+                                         database: String,
+                                         privileges: Seq[String]) extends DatabasePrivilegeEvent
 
 case class DropDatabasePrivilegePreEvent(
-	organization: String,
-	user: String,
-	database: String,
-	privileges: Seq[String]) extends DatabasePrivilegeEvent
+                                          organization: String,
+                                          user: String,
+                                          database: String,
+                                          privileges: Seq[String]) extends DatabasePrivilegeEvent
+
 case class DropDatabasePrivilegeEvent(
-	organization: String,
-	user: String,
-	database: String,
-	privileges: Seq[String]) extends DatabasePrivilegeEvent
+                                       organization: String,
+                                       user: String,
+                                       database: String,
+                                       privileges: Seq[String]) extends DatabasePrivilegeEvent
 
 trait TablePrivilegeEvent extends CatalogEvent
 
 case class CreateTablePrivilegePreEvent(
-	organization: String,
-	user: String,
-	database: String,
-	table: String,
-	privileges: Seq[String]) extends TablePrivilegeEvent
+                                         organization: String,
+                                         user: String,
+                                         database: String,
+                                         table: String,
+                                         privileges: Seq[String]) extends TablePrivilegeEvent
 
 case class CreateTablePrivilegeEvent(
-	organization: String,
-	user: String,
-	database: String,
-	table: String,
-	privileges: Seq[String]) extends TablePrivilegeEvent
+                                      organization: String,
+                                      user: String,
+                                      database: String,
+                                      table: String,
+                                      privileges: Seq[String]) extends TablePrivilegeEvent
 
 case class DropTablePrivilegePreEvent(
-	organization: String,
-	user: String,
-	database: String,
-	table: String,
-	privileges: Seq[String]) extends TablePrivilegeEvent
+                                       organization: String,
+                                       user: String,
+                                       database: String,
+                                       table: String,
+                                       privileges: Seq[String]) extends TablePrivilegeEvent
+
 case class DropTablePrivilegeEvent(
-	organization: String,
-	user: String,
-	database: String,
-	table: String,
-	privileges: Seq[String]) extends TablePrivilegeEvent
+                                    organization: String,
+                                    user: String,
+                                    database: String,
+                                    table: String,
+                                    privileges: Seq[String]) extends TablePrivilegeEvent
 
 trait ColumnPrivilegeEvent extends CatalogEvent
 
 case class CreateColumnPrivilegePreEvent(
-	organization: String,
-	user: String,
-	database: String,
-	table: String,
-	privileges: Seq[(String, Seq[String])]) extends ColumnPrivilegeEvent
+                                          organization: String,
+                                          user: String,
+                                          database: String,
+                                          table: String,
+                                          privileges: Map[String, Seq[String]]) extends ColumnPrivilegeEvent
 
 case class CreateColumnPrivilegeEvent(
-	organization: String,
-	user: String,
-	database: String,
-	table: String,
-	privileges: Seq[(String, Seq[String])]) extends ColumnPrivilegeEvent
+                                       organization: String,
+                                       user: String,
+                                       database: String,
+                                       table: String,
+                                       privileges: Map[String, Seq[String]]) extends ColumnPrivilegeEvent
 
 case class DropColumnPrivilegePreEvent(
-	organization: String,
-	user: String,
-	database: String,
-	table: String,
-	privileges: Seq[(String, Seq[String])]) extends ColumnPrivilegeEvent
+                                        organization: String,
+                                        user: String,
+                                        database: String,
+                                        table: String,
+                                        privileges: Seq[(String, Seq[String])]) extends ColumnPrivilegeEvent
+
 case class DropColumnPrivilegeEvent(
-	organization: String,
-	user: String,
-	database: String,
-	table: String,
-	privileges: Seq[(String, Seq[String])]) extends ColumnPrivilegeEvent
+                                     organization: String,
+                                     user: String,
+                                     database: String,
+                                     table: String,
+                                     privileges: Seq[(String, Seq[String])]) extends ColumnPrivilegeEvent
 
 
-/*
+trait GroupEvent extends CatalogEvent
 
+case class CreateGroupPreEvent(
+                                organization: String,
+                                group: String) extends GroupEvent
 
-trait UserTableRelEvent extends CatalogEvent
+case class CreateGroupEvent(
+                             organization: String,
+                             group: String) extends GroupEvent
 
-case class CreateUserTableRelPreEvent(
-	organization: String,
-	user: String,
-	database: String,
-	table: String,
-	columns: Seq[String]) extends UserTableRelEvent
-case class CreateUserTableRelEvent(
-	organization: String,
-	user: String,
-	database: String,
-	table: String,
-	columns: Seq[String]) extends UserTableRelEvent
-case class DropUserTableRelPreEvent(
-	organization: String,
-	user: String,
-	database: String,
-	table: String,
-	columns: Seq[String]) extends UserTableRelEvent
-case class DropUserTableRelEvent(
-	organization: String,
-	user: String,
-	database: String,
-	table: String,
-	columns: Seq[String]) extends UserTableRelEvent
-case class DropUserTableRelsByTablePreEvent(
-	organization: String,
-	database: String,
-	table: String) extends UserTableRelEvent
-case class DropUserTableRelsByTableEvent(
-	organization: String,
-	database: String,
-	table: String) extends UserTableRelEvent
+case class DropGroupPreEvent(
+                              organization: String,
+                              group: String) extends GroupEvent
 
-case class DropUserTableRelsByUserPreEvent(
-	organization: String,
-	user: String) extends UserTableRelEvent
+case class DropGroupEvent(
+                           organization: String,
+                           group: String) extends GroupEvent
 
-case class DropUserTableRelsByUserEvent(
-	organization: String,
-	user: String) extends UserTableRelEvent
-*/
+case class RenameGroupPreEvent(
+                                organization: String,
+                                group: String,
+                                newGroup: String
+                              ) extends GroupEvent
 
+case class RenameGroupEvent(
+                             organization: String,
+                             group: String,
+                             newGroup: String
+                           ) extends GroupEvent
 
+case class CreateGroupUserRelPreEvent(
+                                       organization: String,
+                                       group: String,
+                                       users: Seq[String]
+                                     ) extends GroupEvent
 
+case class CreateGroupUserRelEvent(
+                                    organization: String,
+                                    group: String,
+                                    users: Seq[String]
+                                  ) extends GroupEvent
 
+case class DropGroupUserRelPreEvent(
+                                     organization: String,
+                                     group: String,
+                                     users: Seq[String]
+                                   ) extends GroupEvent
 
-trait UserGroupRelEvent extends CatalogEvent
-
-case class CreateUserGroupRelPreEvent(
-	organization: String,
-	group: String,
-	addUsers: Seq[String]
-) extends UserGroupRelEvent
-case class CreateUserGroupRelEvent(
-	organization: String,
-	group: String,
-	addUsers: Seq[String]
-) extends UserGroupRelEvent
-case class DropUserGroupRelPreEvent(
-	organization: String,
-	group: String,
-	removeUsers: Seq[String]) extends UserGroupRelEvent
-case class DropUserGroupRelEvent(
-	organization: String,
-	group: String,
-	removeUsers: Seq[String]) extends UserGroupRelEvent
-case class DropUserGroupRelByGroupPreEvent(
-	organization: String,
-	group: String,
-	removeUsers: Seq[String]) extends UserGroupRelEvent
-case class DropUserGroupRelByGroupEvent(
-	organization: String,
-	group: String,
-	removeUsers: Seq[String]) extends UserGroupRelEvent
-
-case class DropUserGroupRelByUserPreEvent(
-	organization: String,
-	user: String,
-	affectedGroups: Seq[String]) extends UserGroupRelEvent
-case class DropUserGroupRelByUserEvent(
-	organization: String,
-	user: String,
-	affectedGroups: Seq[String]) extends UserGroupRelEvent
-
-
+case class DropGroupUserRelEvent(
+                                  organization: String,
+                                  group: String,
+                                  users: Seq[String]
+                                ) extends GroupEvent
 

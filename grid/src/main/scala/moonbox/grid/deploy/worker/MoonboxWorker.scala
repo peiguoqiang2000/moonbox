@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,17 +27,17 @@ import java.util.{Date, Locale}
 import akka.actor.{ActorRef, ActorSystem, Address, Cancellable, Props}
 import com.typesafe.config.ConfigFactory
 import moonbox.common.{MbConf, MbLogging}
-import moonbox.grid.{LogMessage, MbActor}
-import moonbox.grid.deploy.master.{DriverState, MoonboxMaster}
-import moonbox.grid.deploy.master.MoonboxMaster._
 import moonbox.grid.config.WORKER_TIMEOUT
-import moonbox.grid.deploy._
 import moonbox.grid.deploy.DeployMessages.{LaunchDriver, _}
+import moonbox.grid.deploy.app._
+import moonbox.grid.deploy.master.MoonboxMaster
+import moonbox.grid.deploy.master.MoonboxMaster._
+import moonbox.grid.{LogMessage, MbActor}
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
-import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration._
 
 
 class MoonboxWorker(
@@ -54,13 +54,11 @@ class MoonboxWorker(
 	private var registered = false
 	private var connected = false
 	private var connectionAttemptCount = 0
-	private var nextInteractiveDriverNumber = 0
 
 	private val drivers = new mutable.HashMap[String, DriverRunner]
 	private val finishedDrivers = new mutable.LinkedHashMap[String, DriverRunner]
 
-	private val driverIdToDriverDesc = new mutable.HashMap[String, DriverDescription]()
-	private val killMarker = new mutable.HashSet[String]()
+	private val driverIdToDriverDesc = new mutable.HashMap[String, DriverDesc]()
 
 	private var registerToMasterScheduler: Option[Cancellable] = None
 
@@ -68,21 +66,22 @@ class MoonboxWorker(
 	@scala.throws[Exception](classOf[Exception])
 	override def preStart(): Unit = {
 		assert(!registered)
-		logInfo(s"Running Moonbox version 0.3.0")// TODO
+		logInfo(s"Running Moonbox version 0.4.0")
 		logInfo(s"Starting MoonboxWorker at ${self.path.toSerializationFormatWithAddress(address)}")
 
 		Runtime.getRuntime.addShutdownHook(new Thread(new Runnable {
 			override def run(): Unit = {
 				drivers.values.foreach { driver =>
-					if (driver.desc.isInstanceOf[LongRunDriverDescription]) {
-						driver.kill()
+					AppMasterManager.getAppMaster(driver.desc.name) match {
+						case Some(am) =>
+							am.onWorkerExit(driver)
+						case None =>
 					}
 				}
+				logInfo("stop all drivers in worker shutdown hook")
 			}
 		}))
 
-		// launch interactive drivers
-		launchDrivers()
 		registerWithMaster()
 	}
 
@@ -96,13 +95,14 @@ class MoonboxWorker(
 			handleRegisterResponse(msg)
 
 		case SendHeartbeat =>
-			if (connected) { sendToMaster(Heartbeat(workerId, self)) }
+			if (connected) {
+				sendToMaster(Heartbeat(workerId, self))
+			}
 
 		case MasterChanged(masterRef) =>
 			logInfo(s"Master has changed, new master is at ${masterRef.path.address}")
 			changeMaster(masterRef, masterRef.path.address)
-			val driverDesces = drivers.map { case (k, v) => v }.toSeq.map(r => (r.driverId, r.desc, r.submitDate))
-			masterRef ! WorkerStateResponse(workerId, driverDesces)
+			masterRef ! WorkerSchedulerStateResponse(workerId, drivers.keys.toSeq)
 
 		case ReconnectWorker(masterRef) =>
 			logInfo(s"Master with ${masterRef.path.address} requested this worker to reconnect.")
@@ -110,7 +110,7 @@ class MoonboxWorker(
 
 		case LaunchDriver(driverId, driverDesc) =>
 			logInfo(s"Ask to launch driver $driverId")
-			val driver = new DriverRunner(conf, driverId, driverDesc, self, new Date())
+			val driver = new DriverRunner(conf, driverId, driverDesc, sender(), self, new Date())
 			drivers(driverId) = driver
 			driver.start()
 
@@ -119,13 +119,12 @@ class MoonboxWorker(
 			driverIdToDriverDesc.remove(driverId)
 			drivers.get(driverId) match {
 				case Some(runner) =>
-					killMarker.add(driverId)
 					runner.kill()
 				case None =>
 					logError(s"Asked to kill unknown driver $driverId")
 			}
 
-		case driverStateChanged @ DriverStateChanged(driverId, state, appId, exception) =>
+		case driverStateChanged@DriverStateChanged(driverId, state, appId, exception, time) =>
 			handleDriverStateChanged(driverStateChanged)
 
 		case e => println(e)
@@ -157,20 +156,6 @@ class MoonboxWorker(
 
 		sendToMaster(driverStateChanged)
 
-		if (state == DriverState.FINISHED) {
-			if (killMarker.contains(driverId)) {
-				killMarker.remove(driverId)
-			} else {
-				driverIdToDriverDesc.get(driverId).foreach { desc =>
-					if (desc.isInstanceOf[LongRunDriverDescription]) {
-						system.scheduler.scheduleOnce(new FiniteDuration(3, SECONDS)) {
-							logInfo(s"Relaunch driver $driverId")
-							self ! LaunchDriver(driverId, desc)
-						}
-					}
-				}
-			}
-		}
 	}
 
 	private def finishDriver(driverId: String): Unit = {
@@ -181,7 +166,7 @@ class MoonboxWorker(
 
 	override def onDisconnected(remoteAddress: Address): Unit = {
 		if (master.exists(_.path.address == remoteAddress) ||
-			masterAddressToConnect.contains(remoteAddress)) {
+				masterAddressToConnect.contains(remoteAddress)) {
 			logInfo(s"$remoteAddress Disassociated!")
 			masterDisconnected()
 		}
@@ -256,8 +241,7 @@ class MoonboxWorker(
 				system.scheduler.schedule(new FiniteDuration(0, SECONDS),
 					new FiniteDuration(HEARTBEAT_MILLIS, MILLISECONDS), self, SendHeartbeat)
 
-				val driverDesces = drivers.map { case (k, v) => v }.toSeq.map(r => (r.driverId, r.desc, r.submitDate))
-				masterRef ! WorkerLatestState(workerId, driverDesces)
+				masterRef ! WorkerLatestState(workerId, drivers.keys.toSeq)
 
 			case RegisterWorkerFailed(message) =>
 				if (!registered) {
@@ -265,7 +249,7 @@ class MoonboxWorker(
 					gracefullyShutdown()
 				}
 			case MasterInStandby =>
-				// do nothing
+			// do nothing
 		}
 	}
 
@@ -284,41 +268,12 @@ class MoonboxWorker(
 		"worker-%s-%s".format(createDateFormat.format(new Date), address.hostPort)
 	}
 
-	private def newDriverId(driverType: String): String = {
-		val now = System.currentTimeMillis()
-		val submitDate = new Date(now)
-		val driverId = "%s-%s-%s-%04d".format(driverType, host, createDateFormat.format(submitDate), nextInteractiveDriverNumber)
-		nextInteractiveDriverNumber += 1
-		driverId
-	}
-
-	private def launchDrivers(): Unit = {
-		try {
-			val local = LaunchUtils.getLocalDriverConfigs(conf)
-			local.foreach { config =>
-				val driverId = newDriverId("local")
-				val driverDesc = new SparkLocalDriverDescription(driverId, masterAddresses, config)
-				driverIdToDriverDesc.put(driverId, driverDesc)
-				self ! LaunchDriver(driverId, driverDesc)
-			}
-			val cluster = LaunchUtils.getClusterDriverConfigs(conf)
-			cluster.foreach { config =>
-				val driverId = newDriverId("cluster")
-				val driverDesc = new SparkClusterDriverDescription(driverId, masterAddresses, config)
-				driverIdToDriverDesc.put(driverId, driverDesc)
-				self ! LaunchDriver(driverId, driverDesc)
-			}
-		} catch {
-			case e: Throwable =>
-				logError("Launch Driver Error: ", e)
-				gracefullyShutdown()
-		}
-	}
 }
 
 object MoonboxWorker extends MbLogging {
 	val WORKER_NAME = "MoonboxWorker"
 	val WORKER_PATH = s"/user/$WORKER_NAME"
+
 	def main(args: Array[String]) {
 		val conf = new MbConf()
 		val param = new MoonboxWorkerParam(args, conf)
@@ -340,12 +295,12 @@ object MoonboxWorker extends MbLogging {
 			val host = uri.getHost
 			val port = uri.getPort
 			if (uri.getScheme != "moonbox" ||
-				host == null ||
-				port < 0 ||
-				(uri.getPath != null && !uri.getPath.isEmpty) || // uri.getPath returns "" instead of null
-				uri.getFragment != null ||
-				uri.getQuery != null ||
-				uri.getUserInfo != null) {
+					host == null ||
+					port < 0 ||
+					(uri.getPath != null && !uri.getPath.isEmpty) || // uri.getPath returns "" instead of null
+					uri.getFragment != null ||
+					uri.getQuery != null ||
+					uri.getUserInfo != null) {
 				throw new Exception("Invalid master URL: " + url)
 			}
 			s"akka.tcp://${MoonboxMaster.SYSTEM_NAME}@$host:$port${MoonboxMaster.MASTER_PATH}"
